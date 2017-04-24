@@ -5,6 +5,18 @@ Covers only really basic operations such as reading and writing content and colo
 excelcom requires Java Version 1.6 or higher and the COM service (normally included with 
 an office installation).
 
+## How to import
+Add the following dependency to your `pom.xml`:
+
+    <dependencies>
+        <dependency>
+            <groupId>com.github.lprc</groupId>
+            <artifactId>excelcom</artifactId>
+            <version>0.0.1</version>
+        </dependency>
+    </dependencies>
+
+
 ## How to use
 
      // connect to a new excel instance and don't show any dialogs

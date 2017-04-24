@@ -2,7 +2,8 @@
 Easy to use excel modification library using JNA and COM. Works on Windows only.
 Covers only really basic operations such as reading and writing content and coloring.
 
-excelcom requires Java Version 1.6 or higher.
+excelcom requires Java Version 1.6 or higher and the COM service (normally included with 
+an office installation).
 
 ## How to use
 

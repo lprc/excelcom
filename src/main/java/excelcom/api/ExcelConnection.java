@@ -16,9 +16,9 @@ public class ExcelConnection extends COMLateBindingObject {
     /**
      * Connects to a new excel instance
      * @return excel connection
-     * @throws COMException when connecting fails
+     * @throws ExcelException when connecting fails
      */
-    public static ExcelConnection connect() throws COMException {
+    public static ExcelConnection connect() throws ExcelException {
         return connect(false);
     }
 
@@ -26,24 +26,28 @@ public class ExcelConnection extends COMLateBindingObject {
      * Connects to a new excel instance
      * @param useActiveInstance if true, an existing instance will be used
      * @return excel connection
-     * @throws COMException when connecting fails
+     * @throws ExcelException when connecting fails
      */
-    public static ExcelConnection connect(boolean useActiveInstance) throws COMException {
-        Ole32.INSTANCE.CoInitializeEx(Pointer.NULL, Ole32.COINIT_MULTITHREADED);
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                Ole32.INSTANCE.CoUninitialize();
-            }
-        });
-        return new ExcelConnection(useActiveInstance);
+    public static ExcelConnection connect(boolean useActiveInstance) throws ExcelException {
+        try {
+            Ole32.INSTANCE.CoInitializeEx(Pointer.NULL, Ole32.COINIT_MULTITHREADED);
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                @Override
+                public void run() {
+                    Ole32.INSTANCE.CoUninitialize();
+                }
+            });
+            return new ExcelConnection(useActiveInstance);
+        } catch (COMException e) {
+            throw new ExcelException(e, "Failed to connect to " + (useActiveInstance ? "an active " : "a new ") + "Excel instance");
+        }
     }
 
     /**
      * Connects to an excel instance
      * @param useActiveInstance true if should connect to an active excel instance
      */
-    private ExcelConnection(boolean useActiveInstance) throws COMException {
+    private ExcelConnection(boolean useActiveInstance) throws ExcelException {
         super("Excel.Application", useActiveInstance);
     }
 
@@ -55,20 +59,36 @@ public class ExcelConnection extends COMLateBindingObject {
      * @param bVisible true if excel instance should be shown
      * @throws COMException
      */
-    public void setVisible(boolean bVisible) throws COMException {
-        this.setProperty("Visible", bVisible);
+    public void setVisible(boolean bVisible) throws ExcelException {
+        try {
+            this.setProperty("Visible", bVisible);
+        } catch (COMException e) {
+            throw new ExcelException(e, "Failed to set Property 'Visible' to " + bVisible);
+        }
     }
 
-    public void setDisplayAlerts(boolean displayAlerts) {
-        this.setProperty("DisplayAlerts", displayAlerts);
+    public void setDisplayAlerts(boolean displayAlerts) throws ExcelException {
+        try {
+            this.setProperty("DisplayAlerts", displayAlerts);
+        } catch (COMException e) {
+            throw new ExcelException(e, "Failed to set Property 'DisplayAlerts' to " + displayAlerts);
+        }
     }
 
-    public String getVersion() throws COMException {
-        return this.getStringProperty("Version");
+    public String getVersion() throws ExcelException {
+        try {
+            return this.getStringProperty("Version");
+        } catch (COMException e) {
+            throw new ExcelException(e, "Failed to get Property 'Version'");
+        }
     }
 
-    public void quit() throws COMException {
-        this.invokeNoReply("Quit");
+    public void quit() throws ExcelException {
+        try {
+            this.invokeNoReply("Quit");
+        } catch (COMException e) {
+            throw new ExcelException(e, "Failed to invoke 'Quit'");
+        }
     }
 
     /* **************************
@@ -78,16 +98,24 @@ public class ExcelConnection extends COMLateBindingObject {
     /**
      * @return list of workbooks opened in this excel instance
      */
-    public Workbooks getWorkbooks() {
-        return new Workbooks(this.getAutomationProperty("WorkBooks"));
+    public Workbooks getWorkbooks() throws ExcelException {
+        try {
+            return new Workbooks(this.getAutomationProperty("WorkBooks"));
+        } catch (COMException e) {
+            throw new ExcelException(e, "Failed to get Property 'Workbooks'");
+        }
     }
 
     /**
      * Gets the currently active workbook
      * @return Currently active excelcom.api.Workbook
      */
-    public Workbook getActiveWorkbook() {
-        return new Workbook(this.getAutomationProperty("ActiveWorkbook"));
+    public Workbook getActiveWorkbook() throws ExcelException {
+        try {
+            return new Workbook(this.getAutomationProperty("ActiveWorkbook"));
+        } catch (COMException e) {
+            throw new ExcelException(e, "Failed to get Property 'ActiveWorkbook'");
+        }
     }
 
     /**
@@ -95,8 +123,12 @@ public class ExcelConnection extends COMLateBindingObject {
      * @param file file to open
      * @return excelcom.api.Workbook instance
      */
-    public Workbook openWorkbook(File file) {
-        this.invokeNoReply("Open", getWorkbooks(), new Variant.VARIANT(file.getAbsolutePath()));
-        return this.getActiveWorkbook(); //TODO application.recentfiles(1)
+    public Workbook openWorkbook(File file) throws ExcelException {
+        try {
+            this.invokeNoReply("Open", getWorkbooks(), new Variant.VARIANT(file.getAbsolutePath()));
+            return this.getActiveWorkbook(); //TODO application.recentfiles(1)
+        } catch (COMException e) {
+            throw new ExcelException(e, "Failed to open Workbook located at " + file.getAbsolutePath());
+        }
     }
 }

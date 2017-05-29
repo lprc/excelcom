@@ -44,6 +44,23 @@ public class ExcelConnection extends COMLateBindingObject {
     }
 
     /**
+     * Initializes COM manually, NOT RECOMMMENDED! ExcelConnection::connect should initialize and uninitialize COM automatically.
+     * However if this method is called, uninitializeCom must be called anywhen later!
+     * @throws COMException if initialization fails
+     */
+    public void initializeCom() throws COMException {
+        Ole32.INSTANCE.CoInitializeEx(Pointer.NULL, Ole32.COINIT_MULTITHREADED);
+    }
+
+    /**
+     * Uninitialize COM manually, NOT RECOMMENDED! Only use this if you used initializeCom before.
+     * @throws COMException if uninitialization fails
+     */
+    public void uninitializeCom() throws COMException {
+        Ole32.INSTANCE.CoUninitialize();
+    }
+
+    /**
      * Connects to an excel instance
      * @param useActiveInstance true if should connect to an active excel instance
      */

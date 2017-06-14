@@ -48,7 +48,7 @@ public class ExcelConnection extends COMLateBindingObject {
      * However if this method is called, uninitializeCom must be called anywhen later!
      * @throws COMException if initialization fails
      */
-    public void initializeCom() throws COMException {
+    public static void initializeCom() throws COMException {
         Ole32.INSTANCE.CoInitializeEx(Pointer.NULL, Ole32.COINIT_MULTITHREADED);
     }
 
@@ -56,7 +56,7 @@ public class ExcelConnection extends COMLateBindingObject {
      * Uninitialize COM manually, NOT RECOMMENDED! Only use this if you used initializeCom before.
      * @throws COMException if uninitialization fails
      */
-    public void uninitializeCom() throws COMException {
+    public static void uninitializeCom() throws COMException {
         Ole32.INSTANCE.CoUninitialize();
     }
 

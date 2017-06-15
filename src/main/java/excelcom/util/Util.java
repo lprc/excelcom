@@ -1,5 +1,10 @@
 package excelcom.util;
 
+import com.sun.jna.platform.win32.COM.COMException;
+import com.sun.jna.platform.win32.Variant;
+import com.sun.jna.platform.win32.WTypes;
+
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -112,5 +117,30 @@ public class Util {
         } else {
             return ((int)c) - 96;
         }
+    }
+
+    /**
+     * Creates a new Variant object which encapsulates the raw Object with correct type
+     * @param o object to be wrapped
+     * @return Variant wrapping object
+     * @throws COMException if type is unknown
+     */
+    public static Variant.VARIANT createVariantFromObject(Object o) throws COMException {
+        if (o instanceof String) {
+            if (Util.containsSpecialCharacters((String) o)) {
+                // insert strings with special characters as BSTR
+                return new Variant.VARIANT(new WTypes.BSTR((String) o));
+            } else {
+                return new Variant.VARIANT((String) o);
+            }
+        } else if (o instanceof Integer) return new Variant.VARIANT((Integer) o);
+        else if (o instanceof Float) return new Variant.VARIANT((Float) o);
+        else if (o instanceof Double) return new Variant.VARIANT((Double) o);
+        else if (o instanceof Long) return new Variant.VARIANT((Long) o);
+        else if (o instanceof Date) return new Variant.VARIANT((Date) o);
+        else if (o instanceof Short) return new Variant.VARIANT((Short) o);
+        else if (o instanceof Boolean) return new Variant.VARIANT((Boolean) o);
+        else if (o instanceof Byte) return new Variant.VARIANT((Byte) o);
+        throw new COMException("unknown type when creating variant from object: " + o.getClass());
     }
 }

@@ -26,19 +26,15 @@ public class Workbook extends COMLateBindingObject {
     }
 
     /**
-     * Sets a new name for the workbook
-     * @param name Name to be set
-     */
-    public void setName(String name) {
-        this.setProperty("Name", name);
-    }
-
-    /**
      * Gets the name of the workbook
      * @return Name of the workbook
      */
     public String getName() {
-        return this.getStringProperty("Name");
+        try {
+            return this.getStringProperty("Name");
+        } catch (COMException e) {
+            throw new ExcelException(e, "Failed get name of workbook");
+        }
     }
 
     /**
@@ -46,7 +42,11 @@ public class Workbook extends COMLateBindingObject {
      * @param save true if changes should be saved
      */
     public void close(boolean save) {
-        this.invokeNoReply("Close", new Variant.VARIANT(save));
+        try {
+            this.invokeNoReply("Close", new Variant.VARIANT(save));
+        } catch (COMException e) {
+            throw new ExcelException(e, "Failed to " + (save ? "save and " : "") + "close workbook");
+        }
     }
 
     /**
@@ -54,7 +54,24 @@ public class Workbook extends COMLateBindingObject {
      * @throws COMException
      */
     public void save() throws COMException {
-        this.invokeNoReply("Save");
+        try {
+            this.invokeNoReply("Save");
+        } catch (COMException e) {
+            throw new ExcelException(e, "Failed to save workbook");
+        }
+    }
+
+    /**
+     * Saves this workbook to a new file
+     * @param path path to the new file
+     * @throws ExcelException if saving fails
+     */
+    public void saveAs(String path) throws ExcelException {
+        try {
+            this.invokeNoReply("SaveAs", new Variant.VARIANT(path));
+        } catch (COMException e) {
+            throw new ExcelException(e, "Failed to save workbook to " + path);
+        }
     }
 
     /**
@@ -70,7 +87,11 @@ public class Workbook extends COMLateBindingObject {
      * @return a excelcom.api.Worksheet instance representing the newly created worksheet
      */
     public Worksheet addWorksheet(String name) {
-        return getWorksheets().addWorksheet(name);
+        try {
+            return getWorksheets().addWorksheet(name);
+        } catch (COMException e) {
+            throw new ExcelException(e, "Failed to add worksheet named " + name);
+        }
     }
 
     /**
@@ -79,6 +100,10 @@ public class Workbook extends COMLateBindingObject {
      * @return excelcom.api.Worksheet
      */
     public Worksheet getWorksheet(String name) {
-        return new Worksheet(this.getAutomationProperty("Worksheets", this, new Variant.VARIANT(name)));
+        try {
+            return new Worksheet(this.getAutomationProperty("Worksheets", this, new Variant.VARIANT(name)));
+        } catch (COMException e) {
+            throw new ExcelException(e, "Failed to get worksheet named " + name);
+        }
     }
 }

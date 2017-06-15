@@ -121,6 +121,22 @@ public class ExcelTest {
     }
 
     @Test
+    public void shouldSetAndGetUnaryRangeContent() {
+        Worksheet ws = workbook.addWorksheet("test");
+        assertNotNull(ws);
+
+        ws.setUnaryContent("A3", "test");
+        ws.setUnaryContent("A4", 123);
+        ws.setUnaryContent("A5", 123.5);
+        ws.setUnaryContent("A6", "äöüß");
+
+        assertEquals("test", ws.getUnaryContent("A3"));
+        assertEquals(123, ((Double)ws.getUnaryContent("A4")).intValue());
+        assertEquals(123.5, ws.getUnaryContent("A5"));
+        assertEquals("äöüß", ws.getUnaryContent("A6"));
+    }
+
+    @Test
     public void shouldGetUsedRange() {
         Worksheet ws = workbook.addWorksheet("test");
         assertNotNull(ws);

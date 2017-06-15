@@ -39,6 +39,7 @@ Add the following dependency to your `pom.xml`:
     
      // read content
      Util.printMatrix(ws.getContent("A4:B6"));
+     System.out.println(ws.getUnaryContent("A4"));
      
     
      // colorize some cells
@@ -56,10 +57,6 @@ Add the following dependency to your `pom.xml`:
 ## Known problems
 Since COM doesn't provide exact failure descriptions and calling the
  same COM function can have multiple return types, there a some tradeoffs:
-
-- Getting content from a single cell works the same way as getting the content from
-multiple cells. The method `Worksheet#getContent` always has the return type `Object[][]`,
-so if only one cell's value is requested, the result is in `result[0][0]`.
 
 - Setting a comment to a cell works for one cell at a time only. 
 Calling `Worksheet#setComment` with a multiple cell range throws an

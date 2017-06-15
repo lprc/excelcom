@@ -19,6 +19,9 @@ Add the following dependency to your `pom.xml`:
 
 ## How to use
 
+     import excelcom.api.*;
+     import excelcom.util.Util;
+
      // connect to a new excel instance and don't show any dialogs
      ExcelConnection conn = ExcelConnection.connect();
      conn.setDisplayAlerts(false);

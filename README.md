@@ -12,7 +12,7 @@ Add the following dependency to your `pom.xml`:
         <dependency>
             <groupId>com.github.lprc</groupId>
             <artifactId>excelcom</artifactId>
-            <version>0.0.1</version>
+            <version>0.0.3</version>
         </dependency>
     </dependencies>
 

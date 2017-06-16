@@ -42,6 +42,19 @@ public class Worksheet extends COMLateBindingObject {
     }
 
     /**
+     * Deletes this worksheet. Displays a confirmation mesage box unless ExcelConnection#displayAlerts was set to false.
+     * @return true if sheet was deleted, false otherwise
+     * @throws ExcelException
+     */
+    public boolean delete() throws ExcelException {
+        try {
+            return this.invoke("Delete").booleanValue();
+        } catch (COMException e) {
+            throw new ExcelException(e, "Failed to delete worksheet");
+        }
+    }
+
+    /**
      * Gets content from one cell as an object
      * @param range one cell range, e.g. "A5"
      * @return cell value

@@ -3,10 +3,10 @@ package excelcom.test;
 import excelcom.api.ExcelColor;
 import excelcom.api.ExcelConnection;
 import excelcom.api.Workbook;
-
 import excelcom.api.Worksheet;
 import excelcom.util.Util;
 import org.junit.*;
+import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -16,22 +16,26 @@ import java.text.SimpleDateFormat;
 import static org.junit.Assert.*;
 
 /**
- * Test cases for excel
+ * Unit tests for Worksheet
  */
-public class ExcelTest {
+public class WorksheetTest {
 
-    private ExcelConnection connection = null;
-    private Workbook workbook = null;
+    private static ExcelConnection connection = null;
+    private static Workbook workbook = null;
+    private Worksheet worksheet = null;
 
-    @Before
-    public void establishConnection() throws URISyntaxException, InterruptedException {
+    @Rule
+    public TemporaryFolder tempDir = new TemporaryFolder();
+
+    @BeforeClass
+    public static void establishConnection() throws URISyntaxException, InterruptedException {
         connection = ExcelConnection.connect();
         connection.setDisplayAlerts(false);
-        workbook = connection.openWorkbook(new File(getClass().getResource("../../test.xlsx").toURI()));
+        workbook = connection.openWorkbook(new File(WorksheetTest.class.getResource("../../test.xlsx").toURI()));
     }
 
-    @After
-    public void closeConnections() {
+    @AfterClass
+    public static void closeConnections() {
         if(workbook != null) {
             workbook.close(false);
         }
@@ -39,42 +43,20 @@ public class ExcelTest {
             connection.quit();
         }
     }
-
-    @Test
-    public void shouldConnect() {
-        assertNotNull(connection);
-        assertNotNull(connection.getVersion());
+    
+    @Before
+    public void createWorksheet() {
+        worksheet = workbook.addWorksheet("test");
     }
 
-    @Test
-    public void shouldOpenWorkbook() {
-        assertNotNull(workbook);
+    @After
+    public void deleteWorksheet() {
+        worksheet.delete();
+        worksheet = null;
     }
-
-    @Test
-    public void shouldAddWorksheet() {
-        Worksheet ws = workbook.addWorksheet("test");
-        assertNotNull(ws);
-    }
-
-    @Test
-    public void shouldGetWorksheetByName() {
-        Worksheet ws = null;
-        Worksheet ws2 = null;
-
-        ws = workbook.addWorksheet("test");
-        assertNotNull(ws);
-        ws2 = ws;
-        ws = workbook.getWorksheet("test");
-        assertEquals(ws2, ws);
-    }
-
 
     @Test
     public void shouldModifyWorksheetContent() {
-        Worksheet ws = workbook.addWorksheet("test");
-        assertNotNull(ws);
-
         String range = "A2:B5";
         try {
             Object[][] content = new Object[][]{
@@ -84,10 +66,10 @@ public class ExcelTest {
                     {new SimpleDateFormat("dd.MM.yyyy").parse("03.03.2017"), "=Summe(A3;B3)"}
             };
 
-            ws.setContent(range, content);
-            Util.printMatrix(ws.getContent(range));
+            worksheet.setContent(range, content);
+            Util.printMatrix(worksheet.getContent(range));
 
-            Object[][] actual = ws.getContent(range);
+            Object[][] actual = worksheet.getContent(range);
             assertEquals(content[0][0], actual[0][0]);
             assertEquals(content[0][1], ((Double)actual[0][1]).intValue());
             assertEquals(content[1][0], actual[1][0]);
@@ -103,9 +85,6 @@ public class ExcelTest {
 
     @Test
     public void shouldSetRangeToOneValue() {
-        Worksheet ws = workbook.addWorksheet("test");
-        assertNotNull(ws);
-
         String range = "A2:B5";
         Object content = 123.5;
         Object[][] expectedContent = new Object[][]{
@@ -115,32 +94,26 @@ public class ExcelTest {
                 {123.5, 123.5}
         };
 
-        ws.setContent(range, content);
-        Util.printMatrix(ws.getContent(range));
-        assertArrayEquals(expectedContent, ws.getContent(range));
+        worksheet.setContent(range, content);
+        Util.printMatrix(worksheet.getContent(range));
+        assertArrayEquals(expectedContent, worksheet.getContent(range));
     }
 
     @Test
     public void shouldSetAndGetUnaryRangeContent() {
-        Worksheet ws = workbook.addWorksheet("test");
-        assertNotNull(ws);
+        worksheet.setUnaryContent("A3", "test");
+        worksheet.setUnaryContent("A4", 123);
+        worksheet.setUnaryContent("A5", 123.5);
+        worksheet.setUnaryContent("A6", "äöüß");
 
-        ws.setUnaryContent("A3", "test");
-        ws.setUnaryContent("A4", 123);
-        ws.setUnaryContent("A5", 123.5);
-        ws.setUnaryContent("A6", "äöüß");
-
-        assertEquals("test", ws.getUnaryContent("A3"));
-        assertEquals(123, ((Double)ws.getUnaryContent("A4")).intValue());
-        assertEquals(123.5, ws.getUnaryContent("A5"));
-        assertEquals("äöüß", ws.getUnaryContent("A6"));
+        assertEquals("test", worksheet.getUnaryContent("A3"));
+        assertEquals(123, ((Double)worksheet.getUnaryContent("A4")).intValue());
+        assertEquals(123.5, worksheet.getUnaryContent("A5"));
+        assertEquals("äöüß", worksheet.getUnaryContent("A6"));
     }
 
     @Test
     public void shouldGetUsedRange() {
-        Worksheet ws = workbook.addWorksheet("test");
-        assertNotNull(ws);
-
         String range = "A2:B5";
         try {
             Object[][] content = new Object[][]{
@@ -150,10 +123,10 @@ public class ExcelTest {
                     {new SimpleDateFormat("dd.MM.yyyy").parse("03.03.2017"), "=Summe(A3;B3)"}
             };
 
-            ws.setContent(range, content);
-            Util.printMatrix(ws.getContent());
+            worksheet.setContent(range, content);
+            Util.printMatrix(worksheet.getContent());
 
-            Object[][] actual = ws.getContent(range);
+            Object[][] actual = worksheet.getContent(range);
             assertEquals(content[0][0], actual[0][0]);
             assertEquals(content[0][1], ((Double)actual[0][1]).intValue());
             assertEquals(content[1][0], actual[1][0]);
@@ -169,81 +142,66 @@ public class ExcelTest {
 
     @Test
     public void shouldGetUnaryContent() {
-        Worksheet ws = workbook.addWorksheet("test");
-        assertNotNull(ws);
-
         String range = "A1";
         Object content = "test123";
 
-        ws.setContent(range, content);
-        assertEquals(content, ws.getContent()[0][0].toString());
+        worksheet.setContent(range, content);
+        assertEquals(content, worksheet.getContent()[0][0].toString());
     }
 
     @Test(expected = NullPointerException.class)
     public void shouldSetFillColor() {
-        Worksheet ws = workbook.addWorksheet("test");
-        assertNotNull(ws);
-
         String range = "A1:B2";
         String range2 = "A1";
         ExcelColor color = ExcelColor.LIGHT_GREEN;
         ExcelColor color2 = ExcelColor.AQUA;
 
-        assertEquals(ExcelColor.XL_NONE, ws.getFillColor(range));
-        ws.setFillColor(range, color);
-        assertEquals(color, ws.getFillColor(range));
+        assertEquals(ExcelColor.XL_NONE, worksheet.getFillColor(range));
+        worksheet.setFillColor(range, color);
+        assertEquals(color, worksheet.getFillColor(range));
 
-        ws.setFillColor(range2, color2);
-        System.out.println(ws.getFillColor(range));
+        worksheet.setFillColor(range2, color2);
+        System.out.println(worksheet.getFillColor(range));
     }
 
     @Test
     public void
     shouldSetFontColor() {
-        Worksheet ws = workbook.addWorksheet("test");
-        assertNotNull(ws);
-
         String range = "A1:B2";
         String range2 = "A1";
         ExcelColor color = ExcelColor.LIGHT_GREEN;
         ExcelColor color2 = ExcelColor.AQUA;
 
-        assertEquals(ExcelColor.BLACK, ws.getFontColor(range));
-        ws.setFontColor(range, color);
-        assertEquals(color, ws.getFontColor(range));
+        assertEquals(ExcelColor.BLACK, worksheet.getFontColor(range));
+        worksheet.setFontColor(range, color);
+        assertEquals(color, worksheet.getFontColor(range));
 
-        ws.setFontColor(range2, color2);
-        assertEquals(color2, ws.getFontColor(range2));
+        worksheet.setFontColor(range2, color2);
+        assertEquals(color2, worksheet.getFontColor(range2));
     }
 
     @Test
     public void shouldSetBorderColor() {
-        Worksheet ws = workbook.addWorksheet("test");
-        assertNotNull(ws);
-
         String range = "A1:B2";
         String range2 = "A1";
         ExcelColor color = ExcelColor.LIGHT_GREEN;
         ExcelColor color2 = ExcelColor.AQUA;
 
-        assertEquals(ExcelColor.XL_NONE, ws.getBorderColor(range));
-        ws.setBorderColor(range, color);
-        assertEquals(color, ws.getBorderColor(range));
+        assertEquals(ExcelColor.XL_NONE, worksheet.getBorderColor(range));
+        worksheet.setBorderColor(range, color);
+        assertEquals(color, worksheet.getBorderColor(range));
 
-        ws.setBorderColor(range2, color2);
+        worksheet.setBorderColor(range2, color2);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldSetComment() {
-        Worksheet ws = workbook.addWorksheet("test");
-        assertNotNull(ws);
-
         String range = "A1";
         String comment = "test comment äöü";
-        ws.setComment(range, comment);
-        assertEquals(comment, ws.getComment(range));
+        worksheet.setComment(range, comment);
+        assertEquals(comment, worksheet.getComment(range));
 
-        ws.setComment("A2:B2", "test123");
+        worksheet.setComment("A2:B2", "test123");
     }
-}
 
+}

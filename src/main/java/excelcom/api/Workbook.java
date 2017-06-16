@@ -63,14 +63,14 @@ public class Workbook extends COMLateBindingObject {
 
     /**
      * Saves this workbook to a new file
-     * @param path path to the new file
+     * @param file new file
      * @throws ExcelException if saving fails
      */
-    public void saveAs(String path) throws ExcelException {
+    public void saveAs(File file) throws ExcelException {
         try {
-            this.invokeNoReply("SaveAs", new Variant.VARIANT(path));
+            this.invokeNoReply("SaveAs", new Variant.VARIANT(file.getAbsolutePath()));
         } catch (COMException e) {
-            throw new ExcelException(e, "Failed to save workbook to " + path);
+            throw new ExcelException(e, "Failed to save workbook to " + file.getAbsolutePath());
         }
     }
 
@@ -86,7 +86,7 @@ public class Workbook extends COMLateBindingObject {
      * Adds a worksheet to this workbook
      * @return a excelcom.api.Worksheet instance representing the newly created worksheet
      */
-    public Worksheet addWorksheet(String name) {
+    public Worksheet addWorksheet(String name) throws ExcelException {
         try {
             return getWorksheets().addWorksheet(name);
         } catch (COMException e) {
@@ -99,7 +99,7 @@ public class Workbook extends COMLateBindingObject {
      * @param name Name of worksheet to get
      * @return excelcom.api.Worksheet
      */
-    public Worksheet getWorksheet(String name) {
+    public Worksheet getWorksheet(String name) throws ExcelException {
         try {
             return new Worksheet(this.getAutomationProperty("Worksheets", this, new Variant.VARIANT(name)));
         } catch (COMException e) {

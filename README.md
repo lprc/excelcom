@@ -12,7 +12,7 @@ Add the following dependency to your `pom.xml`:
         <dependency>
             <groupId>com.github.lprc</groupId>
             <artifactId>excelcom</artifactId>
-            <version>0.0.3</version>
+            <version>0.0.5</version>
         </dependency>
     </dependencies>
 
@@ -21,41 +21,48 @@ Add the following dependency to your `pom.xml`:
 
      import excelcom.api.*;
      import excelcom.util.Util;
-
-     // connect to a new excel instance and don't show any dialogs
-     ExcelConnection conn = ExcelConnection.connect();
-     conn.setDisplayAlerts(false);
      
-    
-     // open a workbook
-     Workbook wb = conn.openWorkbook(new File("test.xlsx"));
-     
-    
-     // open a worksheet
-     Worksheet ws = wb.getWorksheet("Tabelle1");
-     
-    
-     // write some content, mutliple cell range and unary cell range
-     ws.setContent("A4:B5", new Object[][]{ {123, 456.5}, {"test", "äöüß"} });
-     ws.setContent("A6", 432.4f);
-     
-    
-     // read content
-     Util.printMatrix(ws.getContent("A4:B6"));
-     System.out.println(ws.getUnaryContent("A4"));
-     
-    
-     // colorize some cells
-     ws.setFillColor("A4", ExcelColor.LIGHT_GREEN);
-     ws.setFontColor("A5", ExcelColor.RED);
-     
-    
-     // attach some comments (works for one cell only)
-     ws.setComment("A6", "test comment");
-     
-    
-     // save and close workbook
-     wb.close(true);
+     // note that conn.quit() MUST be called later for uninitializing COM correctly.
+     // otherwise opened excel proecesses will remain in task manager.
+     try {
+         // connect to a new excel instance and don't show any dialogs
+         ExcelConnection conn = ExcelConnection.connect();
+         conn.setDisplayAlerts(false);
+         
+        
+         // open a workbook
+         Workbook wb = conn.openWorkbook(new File("test.xlsx"));
+         
+        
+         // open a worksheet
+         Worksheet ws = wb.getWorksheet("Tabelle1");
+         
+        
+         // write some content, mutliple cell range and unary cell range
+         ws.setContent("A4:B5", new Object[][]{ {123, 456.5}, {"test", "äöüß"} });
+         ws.setContent("A6", 432.4f);
+         
+        
+         // read content
+         Util.printMatrix(ws.getContent("A4:B6"));
+         System.out.println(ws.getUnaryContent("A4"));
+         
+        
+         // colorize some cells
+         ws.setFillColor("A4", ExcelColor.LIGHT_GREEN);
+         ws.setFontColor("A5", ExcelColor.RED);
+         
+        
+         // attach some comments (works for one cell only)
+         ws.setComment("A6", "test comment");
+         
+        
+         // save and close workbook
+         wb.close(true);
+     } finally {
+         // quit excel instance and uninitialize COM
+         conn.quit();
+     }
 
 ## Known problems
 Since COM doesn't provide exact failure descriptions and calling the

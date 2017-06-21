@@ -38,4 +38,12 @@ public class ExcelConnectionTest {
     public void shouldOpenWorkbook() throws URISyntaxException {
         assertNotNull(connection.openWorkbook(new File(getClass().getResource("../../test.xlsx").toURI())));
     }
+
+    @Test
+    public void shouldUseActiveInstance() {
+        ExcelConnection con2 = ExcelConnection.connect(true);
+        assertNotNull(con2);
+        con2.quit();
+        assertNotNull(connection.getVersion());
+    }
 }

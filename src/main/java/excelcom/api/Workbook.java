@@ -12,17 +12,8 @@ import java.io.File;
  */
 public class Workbook extends COMLateBindingObject {
 
-    private ExcelConnection connection = null;
-    private File file = null;
-
     Workbook(IDispatch iDispatch) throws COMException {
         super(iDispatch);
-    }
-
-    Workbook(IDispatch iDispatch, ExcelConnection connection, File file) throws COMException {
-        super(iDispatch);
-        this.connection = connection;
-        this.file = file;
     }
 
     /**

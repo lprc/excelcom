@@ -13,6 +13,8 @@ import java.io.File;
  */
 public class ExcelConnection extends COMLateBindingObject {
 
+    private boolean activeInstanceUsed;
+
     /**
      * Connects to a new excel instance
      * @return excel connection
@@ -23,7 +25,8 @@ public class ExcelConnection extends COMLateBindingObject {
     }
 
     /**
-     * Connects to a new excel instance
+     * Connects to a new excel instance. The user MUST call ExcelConnection#quit when finished, otherwise COM will be left
+     * uninitialized and excel processes will stay in task manager.
      * @param useActiveInstance if true, an existing instance will be used
      * @return excel connection
      * @throws ExcelException when connecting fails
@@ -31,12 +34,6 @@ public class ExcelConnection extends COMLateBindingObject {
     public static ExcelConnection connect(boolean useActiveInstance) throws ExcelException {
         try {
             Ole32.INSTANCE.CoInitializeEx(Pointer.NULL, Ole32.COINIT_MULTITHREADED);
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-                @Override
-                public void run() {
-                    Ole32.INSTANCE.CoUninitialize();
-                }
-            });
             return new ExcelConnection(useActiveInstance);
         } catch (COMException e) {
             throw new ExcelException(e, "Failed to connect to " + (useActiveInstance ? "an active " : "a new ") + "Excel instance");
@@ -66,6 +63,7 @@ public class ExcelConnection extends COMLateBindingObject {
      */
     private ExcelConnection(boolean useActiveInstance) throws ExcelException {
         super("Excel.Application", useActiveInstance);
+        this.activeInstanceUsed = useActiveInstance;
     }
 
     /* ****************************
@@ -84,6 +82,11 @@ public class ExcelConnection extends COMLateBindingObject {
         }
     }
 
+    /**
+     * whether to display alerts or not. Set this to false for automatically overwriting workbooks on save.
+     * @param displayAlerts
+     * @throws ExcelException
+     */
     public void setDisplayAlerts(boolean displayAlerts) throws ExcelException {
         try {
             this.setProperty("DisplayAlerts", displayAlerts);
@@ -92,6 +95,11 @@ public class ExcelConnection extends COMLateBindingObject {
         }
     }
 
+    /**
+     * Gets the version of excel
+     * @return version of excel instance used
+     * @throws ExcelException
+     */
     public String getVersion() throws ExcelException {
         try {
             return this.getStringProperty("Version");
@@ -100,11 +108,18 @@ public class ExcelConnection extends COMLateBindingObject {
         }
     }
 
+    /**
+     * Quits the excel instance and uninitializes the com interface
+     * @throws ExcelException if quitting or uninitializing com fails
+     */
     public void quit() throws ExcelException {
         try {
-            this.invokeNoReply("Quit");
+            if(!activeInstanceUsed) {
+                this.invokeNoReply("Quit");
+            }
+            Ole32.INSTANCE.CoUninitialize();
         } catch (COMException e) {
-            throw new ExcelException(e, "Failed to invoke 'Quit'");
+            throw new ExcelException(e, "Failed to invoke 'Quit' or to uninitialize COM");
         }
     }
 
@@ -113,6 +128,7 @@ public class ExcelConnection extends COMLateBindingObject {
      * **************************/
 
     /**
+     * (Only used internally atm)
      * @return list of workbooks opened in this excel instance
      */
     public Workbooks getWorkbooks() throws ExcelException {

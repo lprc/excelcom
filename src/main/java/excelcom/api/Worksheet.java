@@ -80,6 +80,27 @@ public class Worksheet extends COMLateBindingObject {
     }
 
     /**
+     * @see #getUnaryContent(String)
+     * @param indices 2-sized array of the form [row, column], 0-based
+     * @throws IllegalArgumentException if indices does not have size 2
+     */
+    public Object getUnaryContent(int[] indices) throws ExcelException, IllegalArgumentException {
+        if(indices.length != 2) {
+            throw new IllegalArgumentException("Row or column index not specified");
+        }
+        return getUnaryContent(Util.getColumnName(indices[1] + 1) + Integer.toString(indices[0] + 1));
+    }
+
+    /**
+     * @see #getUnaryContent(String)
+     * @param row row index, 0-based
+     * @param column column index, 0-based
+     */
+    public Object getUnaryContent(int row, int column) throws ExcelException, IllegalArgumentException {
+        return getUnaryContent(new int[]{row, column});
+    }
+
+    /**
      * Sets content of one cell
      * @param range one cell range, e.g. "A5"
      * @param content
@@ -100,12 +121,37 @@ public class Worksheet extends COMLateBindingObject {
     }
 
     /**
+     * @see #setUnaryContent(String, Object)
+     * @param indices 2-sized array of the form [row, column], 0-based
+     * @throws IllegalArgumentException if indices does not have size 2
+     */
+    public void setUnaryContent(int[] indices, Object content) throws ExcelException, IllegalArgumentException {
+        if(indices.length != 2) {
+            throw new IllegalArgumentException("Row or column index not specified");
+        }
+        setUnaryContent(Util.getColumnName(indices[1] + 1) + Integer.toString(indices[0] + 1), content);
+    }
+
+    /**
+     * @see #setUnaryContent(String, Object)
+     * @param row index of row, 0-based
+     * @param column index of column, 0-based
+     */
+    public void setUnaryContent(int row, int column, Object content) throws ExcelException, IllegalArgumentException {
+        setUnaryContent(new int[]{row, column}, content);
+    }
+
+    /**
      * Gets the whole used content of the worksheet (using UsedRange)
      * @return 2-dimensional Array of Object with content
      * @throws ExcelException
      */
     public Object[][] getContent() throws ExcelException {
-        return this.getContent("UsedRange");
+        try {
+            return this.getContent("UsedRange");
+        } catch (COMException e) {
+            throw new ExcelException(e, "Failed to get content in UsedRange");
+        }
     }
 
     /**
@@ -132,6 +178,31 @@ public class Worksheet extends COMLateBindingObject {
         } catch (COMException e) {
             throw new ExcelException(e, "Failed to get content in range '" + range + "'");
         }
+    }
+
+    /**
+     * @see #getContent(String)
+     * @param from lower bound of range. 2-sized array of the form [row, column], 0-based
+     * @param to upper bound of range. 2-sized array of the form [row, column], 0-based
+     * @throws IllegalArgumentException if indices does not have size 2
+     */
+    public Object[][] getContent(int[] from, int[] to) throws IllegalArgumentException, ExcelException {
+        if(from.length != 2 || to.length != 2) {
+            throw new IllegalArgumentException("Row or column index not specified");
+        }
+        return this.getContent(Util.getColumnName(from[1] + 1) + Integer.toString(from[0] + 1) + ":"
+            + Util.getColumnName(to[1] + 1) + Integer.toString(to[0] + 1));
+    }
+
+    /**
+     * @see #getContent(String)
+     * @param fromRow lower bound row index, 0-based
+     * @param fromColumn lower bound column index, 0-based
+     * @param toRow upper bound row index, 0-based
+     * @param toColumn upper bound column index, 0-based
+     */
+    public Object[][] getContent(int fromRow, int fromColumn, int toRow, int toColumn) throws IllegalArgumentException, ExcelException {
+        return this.getContent(new int[]{fromRow, fromColumn}, new int[]{toRow, toColumn});
     }
 
     /**
@@ -162,6 +233,31 @@ public class Worksheet extends COMLateBindingObject {
     }
 
     /**
+     * @see #setContent(String, Object[][])
+     * @param from lower bound of range. 2-sized array of the form [row, column], 0-based
+     * @param to upper bound of range. 2-sized array of the form [row, column], 0-based
+     * @throws IllegalArgumentException if indices does not have size 2
+     */
+    public void setContent(int[] from, int[] to, Object[][] content) throws IllegalArgumentException, ExcelException {
+        if(from.length != 2 || to.length != 2) {
+            throw new IllegalArgumentException("Row or column index not specified");
+        }
+        this.setContent(Util.getColumnName(from[1] + 1) + Integer.toString(from[0] + 1) + ":"
+                + Util.getColumnName(to[1] + 1) + Integer.toString(to[0] + 1), content);
+    }
+
+    /**
+     * @see #setContent(String, Object[][])
+     * @param fromRow lower bound row index, 0-based
+     * @param fromColumn lower bound column index, 0-based
+     * @param toRow upper bound row index, 0-based
+     * @param toColumn upper bound column index, 0-based
+     */
+    public void setContent(int fromRow, int fromColumn, int toRow, int toColumn, Object[][] content) throws IllegalArgumentException, ExcelException {
+        this.setContent(new int[]{fromRow, fromColumn}, new int[]{toRow, toColumn}, content);
+    }
+
+    /**
      * Sets the content of a range to one value
      * @param range range
      * @param content value to be set
@@ -180,6 +276,31 @@ public class Worksheet extends COMLateBindingObject {
         } catch (COMException e) {
             throw new ExcelException(e, "Failed to set content in range '" + range + "'");
         }
+    }
+
+    /**
+     * @see #setContent(String, Object)
+     * @param from lower bound of range. 2-sized array of the form [row, column], 0-based
+     * @param to upper bound of range. 2-sized array of the form [row, column], 0-based
+     * @throws IllegalArgumentException if indices does not have size 2
+     */
+    public void setContent(int[] from, int[] to, Object content) throws IllegalArgumentException, ExcelException {
+        if(from.length != 2 || to.length != 2) {
+            throw new IllegalArgumentException("Row or column index not specified");
+        }
+        this.setContent(Util.getColumnName(from[1] + 1) + Integer.toString(from[0] + 1) + ":"
+                + Util.getColumnName(to[1] + 1) + Integer.toString(to[0] + 1), content);
+    }
+
+    /**
+     * @see #setContent(String, Object)
+     * @param fromRow lower bound row index, 0-based
+     * @param fromColumn lower bound column index, 0-based
+     * @param toRow upper bound row index, 0-based
+     * @param toColumn upper bound column index, 0-based
+     */
+    public void setContent(int fromRow, int fromColumn, int toRow, int toColumn, Object content) throws IllegalArgumentException, ExcelException {
+        this.setContent(new int[]{fromRow, fromColumn}, new int[]{toRow, toColumn}, content);
     }
 
     /**

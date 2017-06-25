@@ -164,4 +164,27 @@ public class ExcelConnection extends COMLateBindingObject {
             throw new ExcelException(e, "Failed to open Workbook located at " + file.getAbsolutePath());
         }
     }
+
+    /**
+     * Creates a new workbook
+     * @param file workbook to be created
+     * @return created Workbook
+     * @throws ExcelException if creation fails
+     */
+    public Workbook newWorkbook(File file) throws ExcelException {
+        try {
+            Workbook wb = this.getWorkbooks().addWorkbook();
+            wb.saveAs(file);
+            return wb;
+        } catch (COMException e) {
+            throw new ExcelException(e, "Failed to create new workbook");
+        }
+    }
+
+    /**
+     * @see #newWorkbook(File)
+     */
+    public Workbook addWorkbook(File file) throws ExcelException {
+        return this.newWorkbook(file);
+    }
 }

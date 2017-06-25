@@ -120,6 +120,43 @@ public class Util {
     }
 
     /**
+     * Gets the letter representation of a column, like in excel.
+     * E.g. <code>getColumnName(1) => 'A' , getColumnName(27) => 'AA'</code>
+     * @param column xolumn index, 1-based
+     * @return column as letter
+     */
+    public static String getColumnName(int column) {
+        if (column < 1 || column > 16384) {
+            throw new IllegalArgumentException("column index is out of range (1 to 16384)");
+        }
+        int dividend = column;
+        String columnName = "";
+        int modulo;
+
+        while (dividend > 0)
+        {
+            modulo = (dividend - 1) % 26;
+            columnName = ((char)(65 + modulo)) + columnName;
+            dividend = (dividend - modulo) / 26;
+        }
+
+        return columnName;
+    }
+
+    /**
+     * Converts bounds to range
+     * @param lowerRow lower row bound, 0-based
+     * @param lowerColumn lower row bound, 0-based
+     * @param upperRow lower row bound, 0-based
+     * @param upperColumn lower row bound, 0-based
+     * @return range as string
+     */
+    public static String boundsToRange(int lowerRow, int lowerColumn, int upperRow, int upperColumn) {
+        return Util.getColumnName(lowerColumn + 1) + Integer.toString(lowerRow + 1) + ":"
+                + Util.getColumnName(upperColumn + 1) + Integer.toString(upperRow + 1);
+    }
+
+    /**
      * Creates a new Variant object which encapsulates the raw Object with correct type
      * @param o object to be wrapped
      * @return Variant wrapping object

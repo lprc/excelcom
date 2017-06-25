@@ -67,9 +67,20 @@ public class WorksheetTest {
             };
 
             worksheet.setContent(range, content);
-            Util.printMatrix(worksheet.getContent(range));
+            //Util.printMatrix(worksheet.getContent(range));
 
             Object[][] actual = worksheet.getContent(range);
+            assertEquals(content[0][0], actual[0][0]);
+            assertEquals(content[0][1], ((Double)actual[0][1]).intValue());
+            assertEquals(content[1][0], actual[1][0]);
+            assertEquals(content[1][1], ((Double)actual[1][1]).floatValue());
+            assertEquals(content[2][0], actual[2][0]);
+            assertEquals(content[2][1], actual[2][1]);
+            assertEquals(content[3][0], actual[3][0]);
+            assertEquals(78.1, (Double)actual[3][1], 0.1);
+
+            worksheet.setContent(1,2,4,3, content);
+            actual = worksheet.getContent(1,2,4,3);
             assertEquals(content[0][0], actual[0][0]);
             assertEquals(content[0][1], ((Double)actual[0][1]).intValue());
             assertEquals(content[1][0], actual[1][0]);
@@ -95,8 +106,11 @@ public class WorksheetTest {
         };
 
         worksheet.setContent(range, content);
-        Util.printMatrix(worksheet.getContent(range));
+        //Util.printMatrix(worksheet.getContent(range));
         assertArrayEquals(expectedContent, worksheet.getContent(range));
+
+        worksheet.setContent(1,2,4,3,content);
+        assertArrayEquals(expectedContent, worksheet.getContent(1,2,4,3));
     }
 
     @Test
@@ -105,11 +119,15 @@ public class WorksheetTest {
         worksheet.setUnaryContent("A4", 123);
         worksheet.setUnaryContent("A5", 123.5);
         worksheet.setUnaryContent("A6", "äöüß");
+        worksheet.setUnaryContent(new int[]{0,6}, "test123");
+        worksheet.setUnaryContent(0,7, "test321");
 
         assertEquals("test", worksheet.getUnaryContent("A3"));
         assertEquals(123, ((Double)worksheet.getUnaryContent("A4")).intValue());
         assertEquals(123.5, worksheet.getUnaryContent("A5"));
         assertEquals("äöüß", worksheet.getUnaryContent("A6"));
+        assertEquals("test123", worksheet.getUnaryContent(new int[]{0,6}));
+        assertEquals("test321", worksheet.getUnaryContent(0, 7));
     }
 
     @Test
@@ -124,9 +142,9 @@ public class WorksheetTest {
             };
 
             worksheet.setContent(range, content);
-            Util.printMatrix(worksheet.getContent());
+            //Util.printMatrix(worksheet.getContent());
 
-            Object[][] actual = worksheet.getContent(range);
+            Object[][] actual = worksheet.getContent();
             assertEquals(content[0][0], actual[0][0]);
             assertEquals(content[0][1], ((Double)actual[0][1]).intValue());
             assertEquals(content[1][0], actual[1][0]);

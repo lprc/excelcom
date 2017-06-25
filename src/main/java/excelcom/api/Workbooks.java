@@ -12,4 +12,13 @@ class Workbooks extends COMLateBindingObject {
     Workbooks(IDispatch iDispatch) throws COMException {
         super(iDispatch);
     }
+
+    /**
+     * creates a new workbook
+     * @return Workbook
+     * @throws ExcelException
+     */
+    Workbook addWorkbook() throws ExcelException {
+        return new Workbook(this.getAutomationProperty("Add"));
+    }
 }

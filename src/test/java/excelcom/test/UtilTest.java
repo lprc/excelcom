@@ -42,4 +42,22 @@ public class UtilTest {
     public void shouldNoticeWrongRowSize() {
         Util.getRangeSize("A2000000:A2000001");
     }
+
+    @Test
+    public void shouldGetColumnName() {
+        assertEquals("A", Util.getColumnName(1));
+        assertEquals("B", Util.getColumnName(2));
+        assertEquals("AA", Util.getColumnName(27));
+        assertEquals("XFD", Util.getColumnName(16384));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNoticeTooBigColumnIndex() {
+        Util.getColumnName(17000);
+    }
+
+    @Test
+    public void shouldConvertBoundsToRange() {
+        assertEquals("B2:E4", Util.boundsToRange(1,1,3,4));
+    }
 }

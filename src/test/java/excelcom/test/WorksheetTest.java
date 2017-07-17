@@ -222,4 +222,27 @@ public class WorksheetTest {
         worksheet.setComment("A2:B2", "test123");
     }
 
+    @Test
+    public void shouldSetDifferentColumnLengthContent() {
+        String range = "D5:E6";
+        Object[][] content = new Object[][]{
+                {"A22", 123.25},
+                {54.5},
+        };
+
+        worksheet.setContent(range, content);
+        assertArrayEquals(new Object[][]{ {"A22", 123.25} , {54.5, null} }, worksheet.getContent(range));
+    }
+
+    @Test
+    public void shouldSetNullContent() {
+        String range = "D5:E6";
+        Object[][] content = new Object[][]{
+                {"A22", 123.25},
+                {54.5, null},
+        };
+
+        worksheet.setContent(range, content);
+        assertArrayEquals(new Object[][]{ {"A22", 123.25} , {54.5, null} }, worksheet.getContent(range));
+    }
 }

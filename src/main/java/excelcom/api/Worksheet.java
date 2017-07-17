@@ -215,11 +215,17 @@ public class Worksheet extends COMLateBindingObject {
             Range pRange = new Range(this.getAutomationProperty("Range", this, new Variant.VARIANT(range)));
             int rowCount = content.length;
             int columnCount = content[0].length;
+            // get maximum column count
+            for(int i = 1; i < rowCount; i++) {
+                if(content[i].length > columnCount) {
+                    columnCount = content[i].length;
+                }
+            }
 
             // transpose content: in java it's (row,column) but in excel it's (column,row)
             OaIdl.SAFEARRAY sa = OaIdl.SAFEARRAY.createSafeArray(columnCount, rowCount);
             for (int i = 0; i < rowCount; i++) {
-                for (int j = 0; j < columnCount; j++) {
+                for (int j = 0; j < content[i].length; j++) {
                     Object cell = content[i][j];
                     sa.putElement(Util.createVariantFromObject(cell), j, i);
                 }

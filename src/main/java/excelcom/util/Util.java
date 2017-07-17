@@ -178,6 +178,7 @@ public class Util {
         else if (o instanceof Short) return new Variant.VARIANT((Short) o);
         else if (o instanceof Boolean) return new Variant.VARIANT((Boolean) o);
         else if (o instanceof Byte) return new Variant.VARIANT((Byte) o);
+        else if (o == null) return new Variant.VARIANT();
         throw new COMException("unknown type when creating variant from object: " + o.getClass());
     }
 }

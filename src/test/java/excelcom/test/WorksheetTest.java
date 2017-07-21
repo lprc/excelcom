@@ -1,9 +1,6 @@
 package excelcom.test;
 
-import excelcom.api.ExcelColor;
-import excelcom.api.ExcelConnection;
-import excelcom.api.Workbook;
-import excelcom.api.Worksheet;
+import excelcom.api.*;
 import excelcom.util.Util;
 import org.junit.*;
 import org.junit.rules.TemporaryFolder;
@@ -244,5 +241,21 @@ public class WorksheetTest {
 
         worksheet.setContent(range, content);
         assertArrayEquals(new Object[][]{ {"A22", 123.25} , {54.5, null} }, worksheet.getContent(range));
+    }
+
+    @Test
+    public void shouldFindValue() {
+        Object[][] content = {{"123abc", "äö12ü"}};
+        worksheet.setContent("A1:B1", content);
+        FindResult fr = worksheet.find("2");
+
+        assertNotNull(fr);
+        assertEquals(content[0][1], fr.getContent());
+
+        FindResult fr2 = fr.next();
+        assertNotEquals(fr, fr2);
+        assertEquals(content[0][0], fr2.getContent());
+
+        assertNull(worksheet.find("2", "C5:D6"));
     }
 }

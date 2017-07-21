@@ -56,6 +56,18 @@ class Range extends COMLateBindingObject {
         }.getText();
     }
 
+    FindResult find(String value) {
+        IDispatch find = this.getAutomationProperty("Find", this, new Variant.VARIANT(value));
+        if (find == null) {
+            return null;
+        }
+        return new FindResult(this.getAutomationProperty("Find", this, new Variant.VARIANT(value)), this);
+    }
+
+    FindResult findNext(FindResult previous) {
+        return new FindResult(this.getAutomationProperty("FindNext", this, previous.toVariant()), this);
+    }
+
     /**
      * Can be Interior, Border or Font. Has methods for setting e.g. Color.
      */

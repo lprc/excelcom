@@ -55,6 +55,31 @@ public class Worksheet extends COMLateBindingObject {
     }
 
     /**
+     * searches for a value in UsedRange
+     * @see #find(String, String)
+     */
+    public FindResult find(String value) throws ExcelException {
+        return this.find(value, "UsedRange");
+    }
+
+    /**
+     * Searches for a value in a range
+     * @param value value to be searched for, might contain widlcards (see vba reference for further information)
+     * @return result or null if it wasn't found
+     * @throws ExcelException
+     */
+    public FindResult find(String value, String range) throws ExcelException {
+        try {
+            Range pRange = range.equals("UsedRange") ?
+                    new Range(this.getAutomationProperty("UsedRange", this)) :
+                    new Range(this.getAutomationProperty("Range", this, new Variant.VARIANT(range)));
+            return pRange.find(value);
+        } catch (COMException e) {
+            throw new ExcelException(e, "Failed to find " + value + " in range " + range);
+        }
+    }
+
+    /**
      * Gets content from one cell as an object
      * @param range one cell range, e.g. "A5"
      * @return cell value

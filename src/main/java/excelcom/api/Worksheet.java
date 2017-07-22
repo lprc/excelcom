@@ -6,9 +6,6 @@ import com.sun.jna.platform.win32.COM.COMLateBindingObject;
 import com.sun.jna.platform.win32.COM.IDispatch;
 import excelcom.util.Util;
 
-import java.util.Date;
-import java.util.regex.Pattern;
-
 /**
  * Represents a worksheet
  */
@@ -55,27 +52,61 @@ public class Worksheet extends COMLateBindingObject {
     }
 
     /**
-     * searches for a value in UsedRange
-     * @see #find(String, String)
-     */
-    public FindResult find(String value) throws ExcelException {
-        return this.find(value, "UsedRange");
-    }
-
-    /**
-     * Searches for a value in a range
+     * Searches for a value in UsedRange
      * @param value value to be searched for, might contain widlcards (see vba reference for further information)
      * @return result or null if it wasn't found
      * @throws ExcelException
      */
-    public FindResult find(String value, String range) throws ExcelException {
+    public FindResult find(String value) throws ExcelException {
         try {
-            Range pRange = range.equals("UsedRange") ?
-                    new Range(this.getAutomationProperty("UsedRange", this)) :
-                    new Range(this.getAutomationProperty("Range", this, new Variant.VARIANT(range)));
-            return pRange.find(value);
+            return this.find(new FindOptions().setValue(value));
         } catch (COMException e) {
-            throw new ExcelException(e, "Failed to find " + value + " in range " + range);
+            throw new ExcelException(e, "Failed to find " + value);
+        }
+    }
+
+    /**
+     * Searches for a value in a range with several options
+     * @param options Options that should be used for the Find method
+     *                @see FindOptions
+     * @return result or null if it wasn't found
+     * @throws ExcelException
+     * @throws IllegalArgumentException if the option After is not one cell
+     */
+    public FindResult find(FindOptions options) throws ExcelException, IllegalArgumentException {
+        // parse range
+        String rangeRaw = options.getRange();
+        Range range = rangeRaw.equals("UsedRange") ?
+                new Range(this.getAutomationProperty("UsedRange", this)) :
+                new Range(this.getAutomationProperty("Range", this, new Variant.VARIANT(rangeRaw)));
+
+        // check that After is only one cell and in range
+        String afterRaw = options.getAfter();
+        if(afterRaw == null) {
+            afterRaw = options.setAfter(Util.getColumnName(range.getColumn()) + range.getRow()).getAfter();
+        }
+        int[] afterBounds = Util.getRangeSize(afterRaw);
+        if(afterBounds[0] != 1 || afterBounds[1] != 1) {
+            throw new IllegalArgumentException("Option After must be one cell. Provided range for After is " + afterRaw);
+        }
+        Range afterRange = new Range(this.getAutomationProperty("Range", this, new Variant.VARIANT(afterRaw)));
+
+        // create array from options
+        Variant.VARIANT[] optionsArray = new Variant.VARIANT[] {
+                new Variant.VARIANT(options.getValue()),
+                afterRange.toVariant(),
+                new Variant.VARIANT(options.getLookIn().getIndex()),
+                new Variant.VARIANT(options.getLookAt().getIndex()),
+                new Variant.VARIANT(options.getSearchOrder().getIndex()),
+                new Variant.VARIANT(options.getSearchDirection().getIndex()),
+                new Variant.VARIANT(options.getMatchCase()),
+                new Variant.VARIANT(options.getMatchByte()),
+        };
+
+        try {
+            return range.find(optionsArray);
+        } catch (COMException e) {
+            throw new ExcelException(e, "Failed to find " + options.getValue() + " in range " + rangeRaw);
         }
     }
 

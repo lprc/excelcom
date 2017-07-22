@@ -3,6 +3,8 @@ package excelcom.api;
 import com.sun.jna.platform.win32.COM.COMException;
 import com.sun.jna.platform.win32.COM.COMLateBindingObject;
 import com.sun.jna.platform.win32.COM.IDispatch;
+import com.sun.jna.platform.win32.OaIdl;
+import com.sun.jna.platform.win32.OleAuto;
 import com.sun.jna.platform.win32.Variant;
 
 import static com.sun.jna.platform.win32.Variant.VT_NULL;
@@ -17,6 +19,14 @@ class Range extends COMLateBindingObject {
 
     Variant.VARIANT getValue() {
         return this.invoke("Value");
+    }
+
+    int getRow() {
+        return this.invoke("Row").intValue();
+    }
+
+    int getColumn() {
+        return this.invoke("Column").intValue();
     }
 
     void setInteriorColor(ExcelColor color) {
@@ -56,12 +66,12 @@ class Range extends COMLateBindingObject {
         }.getText();
     }
 
-    FindResult find(String value) {
-        IDispatch find = this.getAutomationProperty("Find", this, new Variant.VARIANT(value));
+    FindResult find(Variant.VARIANT[] options) {
+        IDispatch find = (IDispatch) this.invoke("Find", options).getValue();
         if (find == null) {
             return null;
         }
-        return new FindResult(this.getAutomationProperty("Find", this, new Variant.VARIANT(value)), this);
+        return new FindResult(find, this);
     }
 
     FindResult findNext(FindResult previous) {

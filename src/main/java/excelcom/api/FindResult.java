@@ -8,8 +8,8 @@ import com.sun.jna.platform.win32.WTypes;
  * Represents a find result object. Row and Column number of the cell can be queried from it.
  */
 public class FindResult extends Range {
-    Range searchedRange;
-    int row = -1, column = -1;
+    private Range searchedRange;
+    private int row = -1, column = -1;
 
     FindResult(IDispatch iDispatch, Range searchedRange) {
         super(iDispatch);

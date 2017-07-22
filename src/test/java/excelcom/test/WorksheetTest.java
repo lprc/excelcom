@@ -244,7 +244,7 @@ public class WorksheetTest {
     }
 
     @Test
-    public void shouldFindValue() {
+    public void shouldFindValueByString() {
         Object[][] content = {{"123abc", "äö12ü"}};
         worksheet.setContent("A1:B1", content);
         FindResult fr = worksheet.find("2");
@@ -256,6 +256,30 @@ public class WorksheetTest {
         assertNotEquals(fr, fr2);
         assertEquals(content[0][0], fr2.getContent());
 
-        assertNull(worksheet.find("2", "C5:D6"));
+        assertNull(worksheet.find("xyz"));
+    }
+
+    @Test
+    public void shouldFindValueWithOptions() {
+        Object[][] content = {{"123abc", "äö12ü", "abc123"}};
+        worksheet.setContent("A1:C1", content);
+
+        // search forward
+        FindResult fr = worksheet.find(new FindOptions().setValue("2"));
+        assertNotNull(fr);
+        assertEquals(content[0][1], fr.getContent());
+
+        FindResult fr2 = fr.next();
+        assertNotEquals(fr, fr2);
+        assertEquals(content[0][2], fr2.getContent());
+
+        // search in an empty range
+        assertNull(worksheet.find(new FindOptions().setRange("C4:D6")));
+
+        // search in reverse order, TODO: FindNext should search in same order as first Find did
+        FindResult fr3 = worksheet.find(new FindOptions().setAfter("B1").setSearchDirection(VbaConstant.XL_PREVIOUS));
+        assertEquals(content[0][0], fr3.getContent());
+        assertEquals(content[0][1], fr3.next().getContent());
+        assertEquals(content[0][2], fr3.next().next().getContent());
     }
 }
